@@ -126,7 +126,7 @@ def get_pc(*, possibly_loading: bool = False) -> UObject | None:
 
 
 match Game.get_tree():
-    case Game.Willow2:
+    case Game.Willow1 | Game.Willow2:
         ENGINE = unrealsdk.find_object(  # pyright: ignore[reportConstantRedefinition]
             "WillowGameEngine",
             "Transient.WillowGameEngine_0",

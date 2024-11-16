@@ -97,6 +97,16 @@ MOD_RELEASE_API_URL: str
 MOD_RELEASE_DOWNLOAD_URL: str
 
 match Game.get_tree():
+    case Game.Willow1:  # TODO: Revisit at somepoint
+        MOD_DB_URL = (  # pyright: ignore[reportConstantRedefinition]
+            "https://example.com"
+        )
+        MOD_RELEASE_API_URL = (  # pyright: ignore[reportConstantRedefinition]
+            "https://example.com"
+        )
+        MOD_RELEASE_DOWNLOAD_URL = (  # pyright: ignore[reportConstantRedefinition]
+            "https://example.com"
+        )
     case Game.Willow2:
         MOD_DB_URL = (  # pyright: ignore[reportConstantRedefinition]
             "https://bl-sdk.github.io/willow2-mod-db/"
