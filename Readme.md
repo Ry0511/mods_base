@@ -24,6 +24,13 @@ game specific things:
   can be combined under the same type. As an example, previously if you passed an explicit hook list
   to `build_mod`, the type hinting would only accept a list where all hooks were of the same type.
 
+- Fixed that defining an option, keybind, hook, or command as a class member, and then constructing
+  it via the `build_mod` factory, would pass empty lists to the constructor and thus prevent the
+  auto member collection from running.
+
+- Changed the display version to be sourced from `mod_manager.display_version` in the unrealsdk
+  config file, rather than an environment variable.
+
 ### v1.5
 - Added a default `rlm` command, which is a helper to reload Python modules during development.
 - Deprecated the `auto_enable` arg in the `@hook` decorator, since it was misleading and in 99% of

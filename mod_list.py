@@ -128,7 +128,7 @@ match Game.get_tree():
             "https://github.com/bl-sdk/oak-mod-manager/releases/"
         )
 
-MANAGER_VERSION = os.environ.get("MOD_MANAGER_DISPLAY_VERSION", "Unknown Version")
+MANAGER_VERSION = unrealsdk.config.get("mod_manager", {}).get("display_version", "Unknown Version")
 RE_MANAGER_VERSION = re.compile(r"v?(\d+)\.(\d+)")
 
 

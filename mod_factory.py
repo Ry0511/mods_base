@@ -295,22 +295,18 @@ def update_fields_with_module_search(  # noqa: C901 - difficult to split up
 
     new_keybinds: list[KeybindType] = []
     if find_keybinds := fields["keybinds"] is None:
-        fields["keybinds"] = new_keybinds
         need_to_search_module = True
 
     new_options: list[BaseOption] = []
     if find_options := fields["options"] is None:
-        fields["options"] = new_options
         need_to_search_module = True
 
     new_hooks: list[HookType] = []
     if find_hooks := fields["hooks"] is None:
-        fields["hooks"] = new_hooks
         need_to_search_module = True
 
     new_commands: list[AbstractCommand] = []
     if find_commands := fields["commands"] is None:
-        fields["commands"] = new_commands
         need_to_search_module = True
 
     if not need_to_search_module:
@@ -338,6 +334,20 @@ def update_fields_with_module_search(  # noqa: C901 - difficult to split up
 
             case _:
                 pass
+
+    # Only assign each field if we actually found something, so we keep using the mod constructor's
+    # default otherwise
+    if find_keybinds and new_keybinds:
+        fields["keybinds"] = new_keybinds
+
+    if find_options and new_options:
+        fields["options"] = new_options
+
+    if find_hooks and new_hooks:
+        fields["hooks"] = new_hooks
+
+    if find_commands and new_commands:
+        fields["commands"] = new_commands
 
 
 def deregister_using_settings_file(settings_file: Path) -> None:
