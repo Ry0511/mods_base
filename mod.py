@@ -205,10 +205,15 @@ class Mod:
                     case _:
                         pass
 
-        for option in self.options:
-            option.mod = self
-
         self.enabling_locked = Game.get_current() not in self.supported_games
+
+        def associate_options(options: Sequence[BaseOption]) -> None:
+            for option in options:
+                if isinstance(option, GroupedOption | NestedOption):
+                    associate_options(option.children)
+                option.mod = self
+
+        associate_options(self.options)
 
     def enable(self) -> None:
         """Called to enable the mod."""

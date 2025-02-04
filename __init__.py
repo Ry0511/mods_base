@@ -8,7 +8,7 @@ from unrealsdk.unreal import UObject
 from .dot_sdkmod import open_in_mod_dir
 
 # Need to define a few things first to avoid circular imports
-__version_info__: tuple[int, int] = (1, 5)
+__version_info__: tuple[int, int] = (1, 8)
 __version__: str = f"{__version_info__[0]}.{__version_info__[1]}"
 __author__: str = "bl-sdk"
 

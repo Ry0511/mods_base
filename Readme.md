@@ -11,15 +11,25 @@ game specific things:
 - A mod menu. Consider using [console_mod_menu](https://github.com/bl-sdk/console_mod_menu/)
   while developing, though you likely want to create a gui version for users.
 
-- A keybind implementation, which overwrites `KeybindType.enable` and `KeybindType.disable`, and
-  sets up some hooks to run the callbacks as appropriate.
+- A keybind implementation, which overwrites `KeybindType._enable` and `KeybindType._disable` (and
+  possibly `KeybindType._rebind`), and sets up some hooks to run the callbacks as appropriate.
 
 - An initialization script. This should import this and the keybind implementation, then find and
-  import all mods, and finally call `mods_base.mod_list.register_base_mod `
+  import all mods, and finally call `mods_base.mod_list.register_base_mod`
 
 # Changelog
 
-### Upcoming
+### v1.8
+- Fixed that nested and grouped options' children would not get their `.mod` attribute set.
+
+### v1.7
+- The "Update Available" notification should now immediately go away upon updating, instead of
+  waiting a day for the next check.
+
+- Changed the functions the keybind implementation should overwrite from `KeybindType.enable` to
+  `KeybindType._enable` (+ same for disable). These functions don't need to set `is_enabled`.
+
+### v1.6
 - Changed default type of `HookType` generic type hint to any, so that by default pre and post hooks
   can be combined under the same type. As an example, previously if you passed an explicit hook list
   to `build_mod`, the type hinting would only accept a list where all hooks were of the same type.
@@ -30,6 +40,8 @@ game specific things:
 
 - Changed the display version to be sourced from `mod_manager.display_version` in the unrealsdk
   config file, rather than an environment variable.
+
+- Gave `@command` and `ArgParseCommand.add_argument` default type hinting for the args they forward.
 
 ### v1.5
 - Added a default `rlm` command, which is a helper to reload Python modules during development.

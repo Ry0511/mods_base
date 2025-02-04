@@ -238,9 +238,9 @@ class BaseMod(Library):
             return None
         return tuple(int(x) for x in version_match.groups())
 
-    def get_latest_release_version(self) -> tuple[str, tuple[int, ...]] | tuple[None, None]:
+    def fetch_latest_version(self) -> tuple[str, tuple[int, ...]] | tuple[None, None]:
         """
-        Gets the version of the latest release.
+        Fetches the version of the latest release from github.
 
         Should be called in a thread, as this makes a blocking HTTP request.
 
@@ -270,6 +270,29 @@ class BaseMod(Library):
             unrealsdk.logging.dev_warning(traceback.format_exc())
             return None, None
 
+    def get_latest_cached_version(self) -> tuple[str, tuple[int, ...]] | tuple[None, None]:
+        """
+        Gets the version of the latest release from our cached setting.
+
+        Returns:
+            A tuple of the latest version name and version tuple, or None and None if unknown.
+        """
+        try:
+            name = self.latest_version_option.value
+            if name is None:
+                raise ValueError
+
+            match = RE_MANAGER_VERSION.match(name)
+            if match is None:
+                raise ValueError
+
+            return name, tuple(int(x) for x in match.groups())
+
+        except Exception:  # noqa: BLE001
+            self.latest_version_option.value = None
+            self.save_settings()
+            return None, None
+
     def perform_version_check(self) -> None:
         """
         Checks if there's a newer version, and updates the options appropriately.
@@ -281,16 +304,20 @@ class BaseMod(Library):
             unrealsdk.logging.warning("Skipping SDK update check since current version is unknown")
             return
 
+        fetch_new_version = False
         try:
             next_check_time = datetime.fromisoformat(self.next_version_check_time_option.value)
-            if next_check_time > datetime.now(UTC):
-                # Not time yet
-                return
+            if next_check_time < datetime.now(UTC):
+                fetch_new_version = True
         except ValueError:
-            # If we failed to parse the option, assume we need a new check
-            pass
+            # If we failed to parse the option, assume we need to re-fetch
+            fetch_new_version = True
 
-        latest_version_name, latest_version_tuple = self.get_latest_release_version()
+        if fetch_new_version:
+            latest_version_name, latest_version_tuple = self.fetch_latest_version()
+        else:
+            latest_version_name, latest_version_tuple = self.get_latest_cached_version()
+
         if latest_version_name is None or latest_version_tuple is None:
             return
 

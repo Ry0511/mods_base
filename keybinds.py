@@ -96,19 +96,26 @@ class KeybindType:
 
         super().__setattr__(name, value)
 
-    # These three functions should get replaced by the keybind implementation
-    # The initialization script should make sure to load it before any mods, to make sure they don't
-    # end up with references to these functions
-    # If writing a new implementation, make sure to still set `is_enabled` correctly
     def enable(self) -> None:
         """Enables this keybind."""
-        logging.error("No keybind implementation loaded, unable to enable binds")
+        self._enable()
         self.is_enabled = True
 
     def disable(self) -> None:
         """Disables this keybind."""
-        logging.error("No keybind implementation loaded, unable to disable binds")
+        self._disable()
         self.is_enabled = False
+
+    # These three functions should get replaced by the keybind implementation
+    # The initialization script should make sure to load it before any mods, to make sure they don't
+    # end up with references to these functions
+    def _enable(self) -> None:
+        """Enables this keybind."""
+        logging.error("No keybind implementation loaded, unable to enable binds")
+
+    def _disable(self) -> None:
+        """Disables this keybind."""
+        logging.error("No keybind implementation loaded, unable to disable binds")
 
     def _rebind(self, new_key: str | None) -> None:
         """

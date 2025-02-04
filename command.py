@@ -6,9 +6,9 @@ import importlib
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any, overload
+from typing import Any, Protocol, overload
 
 from unrealsdk import logging
 from unrealsdk.commands import NEXT_LINE, add_command, has_command, remove_command
@@ -75,6 +75,26 @@ class ArgParseCommand(AbstractCommand):
         except SystemExit:
             pass
 
+    @overload
+    def add_argument[T](
+        self,
+        *name_or_flags: str,
+        action: str | type[argparse.Action] = ...,
+        nargs: int | str | None = None,
+        const: Any = ...,
+        default: Any = ...,
+        type: Callable[[str], Any] | argparse.FileType | str = ...,
+        choices: Iterable[T] | None = ...,
+        required: bool = ...,
+        help: str | None = ...,
+        metavar: str | tuple[str, ...] | None = ...,
+        dest: str | None = ...,
+        version: str = ...,
+        **kwargs: Any,
+    ) -> argparse.Action: ...
+    @overload
+    def add_argument(self, *args: Any, **kwargs: Any) -> argparse.Action: ...
+
     def add_argument(self, *args: Any, **kwargs: Any) -> argparse.Action:
         """Wrapper which forwards to the parser's add_argument method."""
         return self.parser.add_argument(*args, **kwargs)
@@ -82,6 +102,31 @@ class ArgParseCommand(AbstractCommand):
     def __call__(self, args: argparse.Namespace) -> None:
         """Wrapper which forwards to the callback."""
         self.callback(args)
+
+
+class _FormatterClass(Protocol):
+    def __call__(self, *, prog: str) -> argparse.HelpFormatter: ...
+
+
+@overload
+def command(
+    cmd: str | None = None,
+    splitter: ARGPARSE_SPLITTER = shlex.split,
+    *,
+    prog: str | None = None,
+    usage: str | None = None,
+    description: str | None = None,
+    epilog: str | None = None,
+    parents: Sequence[argparse.ArgumentParser] = [],
+    formatter_class: _FormatterClass = ...,
+    prefix_chars: str = "-",
+    fromfile_prefix_chars: str | None = None,
+    argument_default: Any = None,
+    conflict_handler: str = "error",
+    add_help: bool = True,
+    allow_abbrev: bool = True,
+    exit_on_error: bool = True,
+) -> Callable[[ARGPARSE_CALLBACK], ArgParseCommand]: ...
 
 
 @overload
