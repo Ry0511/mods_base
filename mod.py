@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 
 class Game(Flag):
+    """A flags enum of the supported games."""
     BL1 = auto()
     BL2 = auto()
     TPS = auto()
@@ -91,15 +92,25 @@ class Game(Flag):
 
 
 class ModType(Enum):
+    """
+    What type of mod this is.
+
+    This does not influence functionality. It's only used for categorization - e.g. influencing
+    ordering in the mod list.
+    """
+
     Standard = auto()
     Library = auto()
 
 
 class CoopSupport(Enum):
+    """Enum for how well a mod supports coop. This is informational only."""
+
     Unknown = auto()
     Incompatible = auto()
     RequiresAllPlayers = auto()
     ClientSide = auto()
+    HostOnly = auto()
 
 
 @dataclass
@@ -117,7 +128,7 @@ class Mod:
         description: A short description of the mod.
         version: A string holding the mod's version. This is purely a display value, the module
                  level attributes should be used for version checking.
-        mod_type: What type of mod this is. This influences ordering in the mod list.
+        mod_type: What type of mod this is. This does not influence functionality.
         supported_games: The games this mod supports. When loaded in an unsupported game, a warning
                          will be displayed and the mod will be blocked from enabling.
         coop_support: How well the mod supports coop, if known. This is purely a display value.
@@ -327,3 +338,30 @@ class Library(Mod):
         if Game.get_current() not in self.supported_games:
             return "<font color='#ffff00'>Incompatible</font>"
         return "<font color='#00ff00'>Loaded</font>"
+
+
+@dataclass
+class RestartToDisable(Mod):
+    """
+    Helper subclass for mods which cannot be fully disabled without restarting the game.
+
+    Mods will still run the normal enable/disable logic. However, after being disabled, the status
+    will show that the mod requires a restart.
+    """
+
+    _ever_enabled: bool = field(default=False, init=False, repr=False)
+
+    def enable(self) -> None:
+        """Called to enable the mod."""
+        super().enable()
+
+        # In case we weren't allowed to enable
+        if self.is_enabled:
+            self._ever_enabled = True
+
+    def get_status(self) -> str:
+        """Gets the current status of this mod."""
+        if self._ever_enabled and not self.is_enabled:
+            return "<font color='#ff6060'>Disabling on Restart</font>"
+
+        return super().get_status()

@@ -169,7 +169,7 @@ def keybind(
     description_title: str | None = None,
     is_hidden: bool = False,
     is_rebindable: bool = True,
-    event_filter: None = None,
+    event_filter: None,
 ) -> KeybindType: ...
 
 
@@ -184,7 +184,7 @@ def keybind(
     description_title: str | None = None,
     is_hidden: bool = False,
     is_rebindable: bool = True,
-    event_filter: None = None,
+    event_filter: None,
 ) -> Callable[[KeybindCallback_Event], KeybindType]: ...
 
 

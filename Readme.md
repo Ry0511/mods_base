@@ -19,6 +19,19 @@ game specific things:
 
 # Changelog
 
+### v1.9
+- Added a new `CoopSupport.HostOnly` value.
+
+- Added a helper `RestartToDisable` mod class, for mods which need a restart to fully disable.
+
+- Specifying a custom class when calling `build_mod` now type hints returning an instance of it,
+  instead of just `Mod`.
+
+- `SliderOption`s now throw if initialized with a step larger than their allowed range.
+
+- Added `_(to|from)_json()` methods to all options, and changed settings saving and loading to use
+  them.
+
 ### v1.8
 - Fixed that nested and grouped options' children would not get their `.mod` attribute set.
 

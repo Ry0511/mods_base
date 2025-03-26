@@ -20,9 +20,9 @@ from .options import BaseOption, GroupedOption, NestedOption
 from .settings import SETTINGS_DIR
 
 
-def build_mod(
+def build_mod[T: Mod = Mod](
     *,
-    cls: type[Mod] = Mod,
+    cls: type[T] = Mod,
     deregister_same_settings: bool = True,
     inject_version_from_pyproject: bool = True,
     version_info_parser: Callable[[str], tuple[int, ...]] = (
@@ -43,7 +43,7 @@ def build_mod(
     auto_enable: bool | None = None,
     on_enable: Callable[[], None] | None = None,
     on_disable: Callable[[], None] | None = None,
-) -> Mod:
+) -> T:
     """
     Factory function to create and register a mod.
 
@@ -73,13 +73,16 @@ def build_mod(
 
     ^1: Multiple authors are joined into a single string using commas + spaces.
     ^2: A string of one of the ModType enum value's name. Case sensitive.
+        Note this only influences ordering in the mod menu. Setting 'mod_type = "Library"' is *not*
+        equivalent to specifying cls=Library when calling this function.
     ^3: A list of strings of Game enum values' names. Case sensitive.
     ^4: A string of one of the CoopSupport enum value's name. Case sensitive.
     ^5: GroupedOption and NestedOption instances are deliberately ignored, to avoid possible issues
         gathering their child options twice. They must be explicitly passed via the arg.
 
-    Missing fields are not passed on to the mod constructor - e.g. by never specifying supported
-    games, they won't be passed on and it will use the default, all of them.
+    Any given fields are passed directly to the mod class constructor - and any missing ones are
+    not. This means not specifying a field is equivalent to the class default - for example, usually
+    mod type defaults to Standard, but when using 'cls=Library' it will default to Library.
 
     Extra Args:
         cls: The mod class to construct using. Can be used to select a subclass.

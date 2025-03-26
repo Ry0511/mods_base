@@ -2,27 +2,13 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, TypedDict, cast
-
-from unrealsdk import logging
+from typing import TYPE_CHECKING, TypedDict
 
 from . import MODS_DIR
-from .options import (
-    BaseOption,
-    BoolOption,
-    ButtonOption,
-    DropdownOption,
-    GroupedOption,
-    HiddenOption,
-    KeybindOption,
-    NestedOption,
-    SliderOption,
-    SpinnerOption,
-    ValueOption,
-)
 
 if TYPE_CHECKING:
     from .mod import Mod
+    from .options import BaseOption
 
 type JSON = Mapping[str, JSON] | Sequence[JSON] | str | int | float | bool | None
 
@@ -36,7 +22,7 @@ class BasicModSettings(TypedDict, total=False):
     keybinds: dict[str, str | None]
 
 
-def load_options_dict(  # noqa: C901 - imo the match is rated too highly, but it's getting there
+def load_options_dict(
     options: Sequence[BaseOption],
     settings: Mapping[str, JSON],
 ) -> None:
@@ -53,58 +39,7 @@ def load_options_dict(  # noqa: C901 - imo the match is rated too highly, but it
 
         value = settings[option.identifier]
 
-        match option:
-            case HiddenOption():
-                option.value = value
-
-            # For all other option types, try validate the type before setting it, we don't want
-            # a "malicious" settings file to corrupt the types at runtime
-
-            case BoolOption():
-                # Special case a false string
-                if isinstance(value, str) and value.strip().lower() == "false":
-                    value = False
-
-                option.value = bool(value)
-            case SliderOption():
-                try:
-                    # Some of the JSON types won't support float conversion suppress the type
-                    # error and catch the exception instead
-                    option.value = float(value)  # type: ignore
-                    if option.is_integer:
-                        option.value = round(option.value)
-                except ValueError:
-                    logging.error(
-                        f"'{value}' is not a valid value for option '{option.identifier}', sticking"
-                        f" with the default",
-                    )
-            case DropdownOption() | SpinnerOption():
-                value = str(value)
-                if value in option.choices:
-                    option.value = value
-                else:
-                    logging.error(
-                        f"'{value}' is not a valid value for option '{option.identifier}', sticking"
-                        f" with the default",
-                    )
-            case GroupedOption() | NestedOption():
-                if isinstance(value, Mapping):
-                    load_options_dict(option.children, value)
-                else:
-                    logging.error(
-                        f"'{value}' is not a valid value for option '{option.identifier}', sticking"
-                        f" with the default",
-                    )
-            case KeybindOption():
-                if value is None:
-                    option.value = None
-                else:
-                    option.value = str(value)
-
-            case _:
-                logging.error(
-                    f"Couldn't load settings for unknown option type {type(option).__name__}",
-                )
+        option._from_json(value)  # type: ignore
 
 
 def default_load_mod_settings(self: Mod) -> None:
@@ -146,29 +81,11 @@ def create_options_dict(options: Sequence[BaseOption]) -> dict[str, JSON]:
     Returns:
         The options' values in dict form.
     """
-    settings: dict[str, JSON] = {}
-    for option in options:
-        match option:
-            case ValueOption():
-                # The generics mean the type of value is technically unknown here
-                value = cast(JSON, option.value)  # type: ignore
-                settings[option.identifier] = value
-
-            case GroupedOption() | NestedOption():
-                settings[option.identifier] = create_options_dict(option.children)
-
-            # Button option is the only standard option which is not abstract, but also not a value,
-            # and doesn't have children.
-            # Just no-op it so that it doesn't show an error
-            case ButtonOption():
-                pass
-
-            case _:
-                logging.error(
-                    f"Couldn't save settings for unknown option type {type(option).__name__}",
-                )
-
-    return settings
+    return {
+        option.identifier: child_json
+        for option in options
+        if (child_json := option._to_json()) is not ...  # pyright: ignore[reportPrivateUsage]
+    }
 
 
 def default_save_mod_settings(self: Mod) -> None:
