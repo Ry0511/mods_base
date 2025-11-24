@@ -27,19 +27,20 @@ class Game(Flag):
     """A flags enum of the supported games."""
 
     BL1 = auto()
+    BL1E = auto()
     BL2 = auto()
     TPS = auto()
     AoDK = auto()
     BL3 = auto()
     WL = auto()
 
-    Willow1 = BL1
+    Willow1 = BL1 | BL1E
     Willow2 = BL2 | TPS | AoDK
     Oak = BL3 | WL
 
     @staticmethod
     @cache
-    def get_current() -> Literal[Game.BL1, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]:
+    def get_current() -> Literal[Game.BL1, Game.BL1E, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]:
         """Gets the current game."""
 
         # As a bit of safety, we can use the architecture to limit which games are allowed
@@ -47,13 +48,14 @@ class Game(Flag):
 
         lower_exe_names: dict[
             str,
-            Literal[Game.BL1, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL],
+            Literal[Game.BL1, Game.BL1E, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL],
         ]
-        default_game: Literal[Game.BL1, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]
+        default_game: Literal[Game.BL1, Game.BL1E, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]
         if is_64bits:
             lower_exe_names = {
                 "borderlands3.exe": Game.BL3,
                 "wonderlands.exe": Game.WL,
+                "borderlandsgoty.exe": Game.BL1E,
             }
             default_game = Game.BL3
         else:
@@ -90,7 +92,7 @@ class Game(Flag):
             The current game's tree.
         """
         match Game.get_current():
-            case Game.BL1:
+            case Game.BL1 | Game.BL1E:
                 return Game.Willow1
             case Game.BL2 | Game.TPS | Game.AoDK:
                 return Game.Willow2
